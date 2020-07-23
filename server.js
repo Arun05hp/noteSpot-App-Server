@@ -17,7 +17,7 @@ app.use(bodyparser.urlencoded({ extended: false }));
 app.use(bodyparser.json());
 
 app.get("/", (req, res, next) => {
-  res.end("Welcome to Craffic api");
+  res.end("Welcome to NoteSpot api");
 });
 
 // Routes
