@@ -13,4 +13,15 @@ router.get("/", (req, res, next) => {
   });
 });
 
+router.post("/signup", (req, res, next) => {
+  res.send(req.body);
+  // con.query("SELECT * FROM user", (err, result) => {
+  //   if (err) {
+  //     res.json({ err: err });
+  //   } else {
+  //     res.json(result);
+  //   }
+  // });
+});
+
 module.exports = router;
