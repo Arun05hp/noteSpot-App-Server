@@ -74,4 +74,19 @@ router.post("/signin", (req, res) => {
   });
 });
 
+router.post("/profile", (req, res) => {
+  const { userId } = req.body;
+  if (!userId) {
+    return res.send({ error: "Not Found" });
+  }
+  con.query("SELECT name,email FROM user WHERE id=?", userId, (err, result) => {
+    if (err) return res.status(422).send(err.message);
+    if (result.length > 0) {
+      return res.send(result[0]);
+    } else {
+      return res.send({ error: "User Not Found" });
+    }
+  });
+});
+
 module.exports = router;
