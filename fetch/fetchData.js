@@ -55,6 +55,7 @@ router.post("/signup", (req, res) => {
             data.password = hash;
             con.query("INSERT INTO user SET ?", data, (err, result) => {
               if (err) {
+                console.log(err);
                 return res.status(422).json(err.message);
               } else {
                 const token = jwt.sign(
@@ -98,7 +99,7 @@ router.post("/profile", (req, res) => {
     return res.send({ error: "Not Found" });
   }
   con.query(
-    "SELECT id,name,email,mobileno,profileImg FROM user WHERE id=?",
+    "SELECT id,name,email,mobileno,profileImg,address FROM user WHERE id=?",
     userId,
     (err, result) => {
       if (err) return res.status(422).send(err.message);
@@ -139,6 +140,22 @@ router.post("/imgupload", (req, res) => {
       }
     );
   });
+});
+
+router.post("/updateprofile", (req, res) => {
+  const { id, username, useremail, mobileNumber, userAddress } = req.body;
+  con.query(
+    "UPDATE user SET name =?,email=?,mobileno=?,address=? WHERE id= ?",
+    [username, useremail, mobileNumber, userAddress, id],
+    (err, result) => {
+      if (err) return res.status(422).send(err.message);
+      if (result.affectedRows != 0) {
+        return res.send({ success: "Profile Updated Successfully" });
+      } else {
+        return res.send({ error: "Failed Update" });
+      }
+    }
+  );
 });
 
 module.exports = router;
