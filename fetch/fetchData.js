@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const router = express.Router();
 const con = require("../mysql");
 const multer = require("multer");
+const fs = require("fs");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -113,10 +114,17 @@ router.post("/profile", (req, res) => {
 router.post("/imgupload", (req, res) => {
   upload(req, res, (err) => {
     const id = req.body.id;
+    const profileImg = req.body.profileImg;
     if (err instanceof multer.MulterError) {
       return res.send({ error: "File Too Large" });
     } else if (err) {
       return res.send({ error: "Something Went Wrong" });
+    }
+    if (profileImg) {
+      const path = `./${profileImg}`;
+      fs.unlink(path, (err) => {
+        if (err) console.log(err);
+      });
     }
     con.query(
       "UPDATE user SET profileImg =? WHERE id= ?",
