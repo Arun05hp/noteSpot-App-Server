@@ -3,6 +3,7 @@ const con = require("./mysql");
 const bodyparser = require("body-parser");
 const express = require("express");
 const app = express();
+const userReq = require("./fetch/fetchData");
 
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -21,7 +22,7 @@ app.get("/", (req, res, next) => {
 });
 
 // Routes
-app.use("/user", require("./fetch/fetchData"));
-
+app.use("/user", userReq);
+app.use("/uploads", express.static("uploads"));
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Listening on Port ${port}...`));

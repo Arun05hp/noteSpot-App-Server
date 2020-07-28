@@ -3,6 +3,23 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const router = express.Router();
 const con = require("../mysql");
+const multer = require("multer");
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./uploads/");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + file.originalname);
+  },
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 1024 * 1024 * 2,
+  },
+}).single("imageData");
 
 // api to get all posts
 router.get("/data", (req, res) => {
@@ -79,13 +96,40 @@ router.post("/profile", (req, res) => {
   if (!userId) {
     return res.send({ error: "Not Found" });
   }
-  con.query("SELECT name,email FROM user WHERE id=?", userId, (err, result) => {
-    if (err) return res.status(422).send(err.message);
-    if (result.length > 0) {
-      return res.send(result[0]);
-    } else {
-      return res.send({ error: "User Not Found" });
+  con.query(
+    "SELECT id,name,email,mobileno,profileImg FROM user WHERE id=?",
+    userId,
+    (err, result) => {
+      if (err) return res.status(422).send(err.message);
+      if (result.length > 0) {
+        return res.send(result[0]);
+      } else {
+        return res.send({ error: "User Not Found" });
+      }
     }
+  );
+});
+
+router.post("/imgupload", (req, res) => {
+  upload(req, res, (err) => {
+    const id = req.body.id;
+    if (err instanceof multer.MulterError) {
+      return res.send({ error: "File Too Large" });
+    } else if (err) {
+      return res.send({ error: "Something Went Wrong" });
+    }
+    con.query(
+      "UPDATE user SET profileImg =? WHERE id= ?",
+      [req.file.path, id],
+      (err, result) => {
+        if (err) return res.status(422).send(err.message);
+        if (result.affectedRows != 0) {
+          return res.send({ success: "Image Uploaded Successfully" });
+        } else {
+          return res.send({ error: "Failed to Upload" });
+        }
+      }
+    );
   });
 });
 
