@@ -112,6 +112,25 @@ router.post("/profile", (req, res) => {
   );
 });
 
+router.post("/getCollegeData", (req, res) => {
+  const { userId } = req.body;
+  if (!userId) {
+    return res.send({ error: "Not Found" });
+  }
+  con.query(
+    "SELECT * FROM collegeData WHERE userId=?",
+    userId,
+    (err, result) => {
+      if (err) return res.status(422).send(err.message);
+      if (result.length > 0) {
+        return res.send(result[0]);
+      } else {
+        return res.send("");
+      }
+    }
+  );
+});
+
 router.post("/imgupload", (req, res) => {
   upload(req, res, (err) => {
     const id = req.body.id;
@@ -153,6 +172,54 @@ router.post("/updateprofile", (req, res) => {
         return res.send({ success: "Profile Updated Successfully" });
       } else {
         return res.send({ error: "Failed Update" });
+      }
+    }
+  );
+});
+
+router.post("/updateCollegeDetails", (req, res) => {
+  const {
+    userId,
+    collegeName,
+    regNo,
+    branch,
+    isHosteller,
+    hostelAddress,
+  } = req.body;
+  if (!collegeName || !regNo || !branch) {
+    return res.send({ error: "Must provide CollegeName,Reg. No, Branch" });
+  }
+  con.query(
+    "SELECT COUNT(*) AS cnt FROM collegeData WHERE userID = ?",
+    userId,
+    (err, result) => {
+      if (err) return res.status(422).send(err.message);
+      if (result[0].cnt > 0) {
+        con.query(
+          "UPDATE collegeData SET collegeName=?,regNo=?,branch=?,isHosteller=?,hostelAddress=? WHERE userId=? ",
+          [collegeName, regNo, branch, isHosteller, hostelAddress, userId],
+          (err, result) => {
+            if (err) return res.status(422).send(err.message);
+            if (result.affectedRows != 0) {
+              return res.send({
+                success: "College Details Updated Successfully",
+              });
+            } else {
+              return res.send({ error: "Failed Update" });
+            }
+          }
+        );
+      } else {
+        con.query("INSERT INTO collegeData SET ?", req.body, (err, result) => {
+          if (err) return res.status(422).send(err.message);
+          if (result.affectedRows != 0) {
+            return res.send({
+              success: "College Details Uploaded Successfully",
+            });
+          } else {
+            return res.send({ error: "Failed Uploaded" });
+          }
+        });
       }
     }
   );
