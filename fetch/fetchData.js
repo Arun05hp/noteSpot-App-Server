@@ -140,7 +140,8 @@ router.post("/imgupload", (req, res) => {
     } else if (err) {
       return res.send({ error: "Something Went Wrong" });
     }
-    if (profileImg) {
+
+    if (profileImg && profileImg != "null") {
       const path = `./${profileImg}`;
       fs.unlink(path, (err) => {
         if (err) console.log(err);
