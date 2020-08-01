@@ -164,6 +164,9 @@ router.post("/imgupload", (req, res) => {
 
 router.post("/updateprofile", (req, res) => {
   const { id, username, useremail, mobileNumber, userAddress } = req.body;
+  if (!useremail || !mobileNumber || !username) {
+    return res.send({ error: "All fields are required" });
+  }
   con.query(
     "UPDATE user SET name =?,email=?,mobileno=?,address=? WHERE id= ?",
     [username, useremail, mobileNumber, userAddress, id],
