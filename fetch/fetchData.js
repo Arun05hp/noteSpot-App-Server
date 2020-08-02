@@ -14,13 +14,44 @@ const storage = multer.diskStorage({
     cb(null, Date.now() + file.originalname);
   },
 });
-
 const upload = multer({
   storage: storage,
   limits: {
     fileSize: 1024 * 1024 * 2,
   },
 }).single("imageData");
+
+const pdfStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./pdf/");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + file.originalname);
+  },
+});
+
+const uploadPdf = multer({
+  storage: pdfStorage,
+  limits: {
+    fileSize: 1024 * 1024 * 5,
+  },
+}).single("pdfData");
+
+const bookStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./books/");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + file.originalname);
+  },
+});
+
+const uploadSellerBook = multer({
+  storage: bookStorage,
+  limits: {
+    fileSize: 1024 * 1024 * 2,
+  },
+}).single("imgData");
 
 // api to get all posts
 router.get("/data", (req, res) => {
@@ -112,6 +143,17 @@ router.post("/profile", (req, res) => {
   );
 });
 
+router.get("/getPdfs", (req, res) => {
+  con.query("SELECT * FROM pdfData", (err, result) => {
+    if (err) return res.status(422).send(err.message);
+    if (result.length > 0) {
+      return res.send(result);
+    } else {
+      return res.send({ error: "No pdf" });
+    }
+  });
+});
+
 router.post("/getCollegeData", (req, res) => {
   const { userId } = req.body;
   if (!userId) {
@@ -124,6 +166,33 @@ router.post("/getCollegeData", (req, res) => {
       if (err) return res.status(422).send(err.message);
       if (result.length > 0) {
         return res.send(result[0]);
+      } else {
+        return res.send("");
+      }
+    }
+  );
+});
+
+router.get("/getbooksData", (req, res) => {
+  con.query("SELECT * FROM bookRecords", (err, result) => {
+    if (err) return res.status(422).send(err.message);
+    if (result.length > 0) {
+      return res.send(result);
+    } else {
+      return res.send("");
+    }
+  });
+});
+
+router.post("/getSellerDetails", (req, res) => {
+  const { sellerId } = req.body;
+  con.query(
+    "SELECT user.name,user.mobileno,user.address, collegeData.collegeName,collegeData.hostelAddress, collegeData.regNo FROM collegeData ,user WHERE collegeData.userId =? AND user.id=?",
+    [sellerId, sellerId],
+    (err, result) => {
+      if (err) return res.status(422).send(err.message);
+      if (result.length > 0) {
+        return res.send(result);
       } else {
         return res.send("");
       }
@@ -154,6 +223,68 @@ router.post("/imgupload", (req, res) => {
         if (err) return res.status(422).send(err.message);
         if (result.affectedRows != 0) {
           return res.send({ success: "Image Uploaded Successfully" });
+        } else {
+          return res.send({ error: "Failed to Upload" });
+        }
+      }
+    );
+  });
+});
+
+router.post("/pdfupload", (req, res) => {
+  uploadPdf(req, res, (err) => {
+    const { userId, topicName, category, description } = req.body;
+    if (err instanceof multer.MulterError) {
+      return res.send({ error: "File Too Large" });
+    } else if (err) {
+      return res.send({ error: "Something Went Wrong" });
+    }
+    con.query(
+      "INSERT INTO pdfData SET userId=?,pdfName=?,category=?,pdfLink=?,description=?",
+      [userId, topicName, category, req.file.path, description],
+      (err, result) => {
+        if (err) return res.status(422).send(err.message);
+        if (result.affectedRows != 0) {
+          return res.send({ success: "Pdf Uploaded Successfully" });
+        } else {
+          return res.send({ error: "Failed to Upload" });
+        }
+      }
+    );
+  });
+});
+
+router.post("/sellBook", (req, res) => {
+  uploadSellerBook(req, res, (err) => {
+    const {
+      userId,
+      bookName,
+      authorName,
+      publisherName,
+      description,
+      price,
+    } = req.body;
+    if (err instanceof multer.MulterError) {
+      return res.send({ error: "File Too Large" });
+    } else if (err) {
+      return res.send({ error: "Something Went Wrong" });
+    }
+
+    con.query(
+      "INSERT INTO bookRecords SET sellerID=?,bookName=?,authorName=?,publisherName=?,description=?,price=?,bookImgLink=?",
+      [
+        userId,
+        bookName,
+        authorName,
+        publisherName,
+        description,
+        price,
+        req.file.path,
+      ],
+      (err, result) => {
+        if (err) return res.status(422).send(err.message);
+        if (result.affectedRows != 0) {
+          return res.send({ success: "Book Uploaded Successfully" });
         } else {
           return res.send({ error: "Failed to Upload" });
         }

@@ -24,5 +24,7 @@ app.get("/", (req, res, next) => {
 // Routes
 app.use("/user", userReq);
 app.use("/uploads", express.static("uploads"));
+app.use("/pdf", express.static("pdf"));
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Listening on Port ${port}...`));
