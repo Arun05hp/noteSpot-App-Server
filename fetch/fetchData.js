@@ -66,11 +66,7 @@ router.get("/data", (req, res) => {
 
 router.post("/signup", (req, res) => {
   const data = req.body;
-  const { name, email, password } = data;
-  if (!email || !password || !name) {
-    return res.send({ error: "Must provide Name, Email and password" });
-  }
-
+  const { email, password } = data;
   con.query(
     "SELECT COUNT(*) AS cnt FROM user WHERE email = ?",
     email,
@@ -105,9 +101,6 @@ router.post("/signup", (req, res) => {
 
 router.post("/signin", (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) {
-    return res.send({ error: "Must provide  Email and password" });
-  }
   con.query("SELECT * FROM user WHERE email=?", email, async (err, result) => {
     if (err) return res.status(422).send(err.message);
     if (result.length > 0) {
