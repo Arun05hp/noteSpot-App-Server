@@ -353,4 +353,39 @@ router.post("/updateCollegeDetails", (req, res) => {
   );
 });
 
+router.post("/contactReqForSeller", (req, res) => {
+  const { id, bookId } = req.body;
+  con.query(
+    "UPDATE bookRecords SET buyerId=?,buyerStatus=? WHERE id= ?",
+    [id, 1, bookId],
+    (err, result) => {
+      if (err) return res.status(422).send(err.message);
+      if (result.affectedRows != 0) {
+        return res.send({ success: "Updated Successfully" });
+      } else {
+        return res.send({ error: "Failed Update" });
+      }
+    }
+  );
+});
+router.post("/accept_RejectReq", (req, res) => {
+  const { bookId, isRejected } = req.body;
+
+  let sql = "UPDATE bookRecords SET sellerStatus=?, buyerStatus=? WHERE id= ?";
+  let sqlValues = [1, 1, bookId];
+  if (isRejected) {
+    sql =
+      "UPDATE bookRecords SET buyerId=?, sellerStatus=?, buyerStatus=? WHERE id= ?";
+    sqlValues = [null, null, null, bookId];
+  }
+  con.query(sql, sqlValues, (err, result) => {
+    if (err) return res.status(422).send(err.message);
+    if (result.affectedRows != 0) {
+      return res.send({ success: "Updated Successfully" });
+    } else {
+      return res.send({ error: "Failed Update" });
+    }
+  });
+});
+
 module.exports = router;
