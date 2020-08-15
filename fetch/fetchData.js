@@ -55,13 +55,17 @@ const uploadSellerBook = multer({
 
 // api to get all posts
 router.get("/data", (req, res) => {
-  con.query("SELECT name FROM user", (err, result) => {
-    if (err) {
-      res.json({ err: err });
-    } else {
-      res.json(result);
+  con.query(
+    "SELECT bookRecords.id,sellerId,bookName,authorName,publisherName,description,price,bookImgLink,buyerId,sellerStatus,buyerStatus,collegeName,regNo,branch,hostelAddress FROM bookRecords LEFT JOIN collegeData ON bookRecords.sellerId = collegeData.userId",
+
+    (err, result) => {
+      if (err) {
+        res.json({ err: err });
+      } else {
+        res.json(result);
+      }
     }
-  });
+  );
 });
 
 router.post("/signup", (req, res) => {
@@ -167,14 +171,17 @@ router.post("/getCollegeData", (req, res) => {
 });
 
 router.get("/getbooksData", (req, res) => {
-  con.query("SELECT * FROM bookRecords", (err, result) => {
-    if (err) return res.status(422).send(err.message);
-    if (result.length > 0) {
-      return res.send(result);
-    } else {
-      return res.send("");
+  con.query(
+    "SELECT bookRecords.id,sellerId,bookName,authorName,publisherName,description,price,bookImgLink,buyerId,sellerStatus,buyerStatus,collegeName,regNo,branch,hostelAddress FROM bookRecords LEFT JOIN collegeData ON bookRecords.sellerId = collegeData.userId",
+    (err, result) => {
+      if (err) return res.status(422).send(err.message);
+      if (result.length > 0) {
+        return res.send(result);
+      } else {
+        return res.send("");
+      }
     }
-  });
+  );
 });
 
 router.post("/getSellerDetails", (req, res) => {
